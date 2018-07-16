@@ -12,23 +12,40 @@ enum Symbol: Character, CaseIterable {
     case rock = "✊"
     case paper = "✋"
     case scissors = "✌️"
+    case lizard = "🦎"
+    case spock = "🖖"
 
-    func getBeatenSymbols() -> [Symbol] {
-        var beatenSymbols: [Symbol]
-
+    private var beatVerbs: [Symbol: String] {
         switch self {
             case .rock:
-                beatenSymbols = [.scissors]
+                return [
+                    .scissors: "crushes",
+                    .lizard: "crushes"
+                ]
             case .paper:
-                beatenSymbols = [.rock]
+                return [
+                    .rock: "covers",
+                    .spock: "disproves"
+                ]
             case .scissors:
-                beatenSymbols = [.paper]
+                return [
+                    .paper: "cuts",
+                    .lizard: "decapitates"
+                ]
+            case .lizard:
+                return [
+                    .spock: "poisons",
+                    .paper: "eats"
+                ]
+            case .spock:
+                return [
+                    .scissors: "smashes",
+                    .rock: "vaporizes"
+                ]
         }
-
-        return beatenSymbols
     }
 
-    func beats(_ symbol: Symbol) -> Bool {
-        return getBeatenSymbols().contains(symbol)
+    func beats(_ symbol: Symbol) -> String? {
+        return beatVerbs[symbol]
     }
 }

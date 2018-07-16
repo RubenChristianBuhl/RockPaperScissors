@@ -9,18 +9,16 @@
 import UIKit
 
 class ViewController: UIViewController, SymbolSelectionDelegate {
-    let resultConfirmationButtonTitle = "OK"
-
-    let winTitle = "You win!"
-    let lossTitle = "You lose!"
-    let drawTitle = "Draw!"
-
-    let userSelectionMessage = "User selected:"
-    let appSelectionMessage = "App selected:"
-
-    let beatVerb = "beats"
+    let winText = "You win!"
+    let lossText = "You lose!"
+    let drawText = "Draw!"
 
     @IBOutlet var symbolCollectionDataSource: SymbolCollectionDataSource!
+
+    @IBOutlet weak var opponentSymbolLabel: UILabel!
+    @IBOutlet weak var userSymbolLabel: UILabel!
+
+    @IBOutlet weak var resultLabel: UILabel!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,36 +27,57 @@ class ViewController: UIViewController, SymbolSelectionDelegate {
     }
 
     func select(symbol: Symbol) {
-        evaluate(userSymbol: symbol, appSymbol: Symbol.allCases.randomElement()!)
+        let opponentSymbol = Symbol.allCases.randomElement()!
+
+        presentSelections(userSymbol: symbol, opponentSymbol: opponentSymbol)
+        evaluate(userSymbol: symbol, opponentSymbol: opponentSymbol)
     }
 
-    func evaluate(userSymbol: Symbol, appSymbol: Symbol) {
-        let selectionMessage = getSelectionMessage(userSymbol: userSymbol, appSymbol: appSymbol)
-
-        if userSymbol.beats(appSymbol) {
-            presentResult(title: winTitle, message: selectionMessage + getBeatMessage(userSymbol, beats: appSymbol))
-        } else if appSymbol.beats(userSymbol) {
-            presentResult(title: lossTitle, message: selectionMessage + getBeatMessage(appSymbol, beats: userSymbol))
+    func evaluate(userSymbol: Symbol, opponentSymbol: Symbol) {
+        if let beatVerb = userSymbol.beats(opponentSymbol) {
+            buildAndPresentResultText(winText, symbolA: userSymbol, beatVerb: beatVerb, symbolB: opponentSymbol)
+        } else if let beatVerb = opponentSymbol.beats(userSymbol) {
+            buildAndPresentResultText(lossText, symbolA: opponentSymbol, beatVerb: beatVerb, symbolB: userSymbol)
         } else {
-            presentResult(title: drawTitle, message: selectionMessage)
+            presentResultText(drawText)
         }
     }
 
-    func getSelectionMessage(userSymbol: Symbol, appSymbol: Symbol) -> String {
-        return "\(userSelectionMessage) \(userSymbol.rawValue)\n\(appSelectionMessage) \(appSymbol.rawValue)\n"
+    func buildAndPresentResultText(_ resultText: String, symbolA: Symbol, beatVerb: String, symbolB: Symbol) {
+        let resultText = buildResultText(resultText, symbolA: symbolA, beatVerb: beatVerb, symbolB: symbolB)
+
+        presentResultText(resultText)
     }
 
-    func getBeatMessage(_ symbol: Symbol, beats beatenSymbol: Symbol) -> String {
-        return "\(symbol.rawValue) \(beatVerb) \(beatenSymbol.rawValue)"
+    func buildResultText(_ resultText: String, symbolA: Symbol, beatVerb: String, symbolB: Symbol) -> String {
+        let beatText = buildBeatText(symbolA: symbolA, beatVerb: beatVerb, symbolB: symbolB)
+
+        return buildResultText(resultText, beatText: beatText)
     }
 
-    func presentResult(title: String, message: String) {
-        let resultController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+    func buildResultText(_ resultText: String, beatText: String) -> String {
+        return """
+        \(resultText)
+        \(beatText)
+        """
+    }
 
-        let confirmationAction = UIAlertAction(title: resultConfirmationButtonTitle, style: .default, handler: nil)
+    func buildBeatText(symbolA: Symbol, beatVerb: String, symbolB: Symbol) -> String {
+        let beatText = "\(symbolA) \(beatVerb) \(symbolB)."
 
-        resultController.addAction(confirmationAction)
+        return capitalizeFirstLetter(text: beatText)
+    }
 
-        present(resultController, animated: false)
+    func capitalizeFirstLetter(text: String) -> String {
+        return text.prefix(1).capitalized + text.dropFirst()
+    }
+
+    func presentSelections(userSymbol: Symbol, opponentSymbol: Symbol) {
+        opponentSymbolLabel.text = "\(opponentSymbol.rawValue)"
+        userSymbolLabel.text = "\(userSymbol.rawValue)"
+    }
+
+    func presentResultText(_ text: String) {
+        resultLabel.text = text
     }
 }
